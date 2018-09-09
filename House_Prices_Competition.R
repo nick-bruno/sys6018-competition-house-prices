@@ -59,6 +59,17 @@ train$SaleType <- as.factor(train$SaleType)
 train$SaleCondition <- as.factor(train$SaleCondition)
 
 
+
+##### POSSIBLE CATEGORICAL VARIABLES #####
+train['has_pool'] <- ifelse(train$PoolArea==0,0,1) # each value equal to one means there is a pool at that house
+train['has_alley_access'] <- ifelse(train$Alley=='NA',0,1)
+train['has_basement'] <- ifelse(train$BsmtQual=='NA',0,1)
+train['has_fireplace'] <- ifelse(train$FireplaceQu=='NA',0,1)
+train['has_garage'] <- ifelse(train$GarageQual=='NA',0,1)
+#####                                ######
+
+
+
 # Split training data into two datasets to train #
 n <- nrow(train)
 seventy_five_percent_of_data <- n*.75
