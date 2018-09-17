@@ -17,6 +17,7 @@ summary(tr)
 #Analyzing the number of missing values
 sum(is.na(tr))
 
+## Data Exploration/Data Cleaning ##
 #Finding columns which have missing values
 na_cnt = as.data.frame(apply(tr,2,function(x) sum(is.na(x))))
 names(na_cnt) = "Value"
@@ -105,12 +106,14 @@ tr['has_fireplace'] <- ifelse(tr$FireplaceQu=='NA',0,1)
 tr['has_garage'] <- ifelse(tr$GarageQual=='NA',0,1) 
 # After exploring these dummy variables, we found that none of them were statistically significant in our regression models.
 
+## Linear Modeling ##
 #Keeping relevant columns in dataframe
 tr_mod = as.data.frame(tr[,!names(tr) %in% na_cnt1$Name])
 
 tr_mod$SalePrice = log(tr_mod$SalePrice,2)
 
 #Dividing dataset into test and training
+# This begins our cross-validation method to evaluate our linear models
 smp = sample(1:nrow(tr_mod),nrow(tr_mod)*.7)
 tr_tr = tr_mod[smp,]
 tr_tst = tr_mod[-smp,]
@@ -144,19 +147,6 @@ mse = mean((tr_tst$SalePrice-reg_pr)^2)
 #Running final linear regression model on the entire dataset
 reg_all = lm(SalePrice ~ `1stFlrSF`+   `2ndFlrSF`+   BedroomAbvGr+   BsmtFinSF1+   BsmtFinSF2+   BsmtUnfSF+   Fireplaces+   GarageArea+   KitchenAbvGr+   LotArea+   MasVnrArea+   OverallCond+   OverallQual+   ScreenPorch+   YearBuilt+  WoodDeckSF + Functional+   MSZoning+   Condition1+  Condition2+  Exterior1st+   Neighborhood+   CentralAir+  Heating+  KitchenQual+  LandSlope+  RoofMatl+  SaleCondition, data = tr_mod)
 summary(reg_all)
-
-"
-MSZoning + LotArea + Street + LandContour + 
-               LotConfig + LandSlope + Neighborhood + Condition1 + Condition2 + 
-BldgType + HouseStyle + OverallQual + OverallCond + YearBuilt + 
-YearRemodAdd + RoofStyle + RoofMatl + Exterior1st + MasVnrType + 
-MasVnrArea + ExterQual + BsmtQual + BsmtExposure + BsmtFinType1 + 
-BsmtFinSF1 + BsmtFinSF2 + BsmtUnfSF + `1stFlrSF` + `2ndFlrSF` + 
-FullBath + BedroomAbvGr + KitchenAbvGr + KitchenQual + TotRmsAbvGrd + 
-Functional + Fireplaces + GarageFinish + GarageCars + GarageArea + 
-GarageQual + GarageCond + WoodDeckSF + ScreenPorch + PoolArea + 
-SaleCondition
-"
 
 #Reading test data
 test = read_csv("test.csv")
@@ -262,7 +252,10 @@ prediction$sale_p = 2^prediction$sale_p
 
 #Exporting the predictions as csv
 write.table(prediction, file = "C1-2-house-prices.csv", row.names=F, col.names=c("Id","SalePrice"), sep=",")
-
+# This linear regression was chosen because we found it had the lowest MSE and highest r-squared compared to
+# to the other regressions run earlier. This conclusion is verified with our cross-validation process as well
+# as the accuracy of the kaggle competition submissions. The accuracy of this model was 0.13494.
+                                  
 ###-----------------------------------------------------------------------------------###
 
 #KNN Implementation
@@ -274,6 +267,7 @@ colnames(tr_mod)[colnames(tr_mod)=="2ndFlrSF"] = "secFlrSF"
 colnames(test_mod)[colnames(test_mod)=="1stFlrSF"] = "firstFlrSF"
 colnames(test_mod)[colnames(test_mod)=="2ndFlrSF"] = "secFlrSF"
 
+# Data cleaning/exploration #
 #Combining values for different categorical variables
 tr_mod$Condition1 = ifelse(tr_mod$Condition1!="Norm","Oth","Norm")
 tr_mod$Exterior1st = ifelse(tr_mod$Exterior1st=="BrkComm"|tr_mod$Exterior1st=="BrkFace","Brk","Oth")
@@ -386,7 +380,7 @@ tr_knn = cbind(tr_knn,tr_knnc)
 test_knn = cbind(test_knn,test_knnc)
 
 #Creating a function to standardize all the variables on scale of maximum and minimum values for the column
-strd <- function(x) 
+strd <- function(x) # creates a function to reduce code complexity and redundancy
 {
   return ((x - min(x)) / (max(x) - min(x))) 
 }
@@ -410,7 +404,7 @@ pred_sp = NA
 for(i in 1:nrow(test_knn))
 {
   tot_dis = NA
-  dis = sweep(as.matrix(tr_knn),2,as.matrix(test_knn[i,]),"-")
+  dis = sweep(as.matrix(tr_knn),2,as.matrix(test_knn[i,]),"-") # using sweep simplifies distance calculation
   dis = dis^2
   tot_dis = apply(dis,1,sum)
   tot_dis = sqrt(tot_dis)
@@ -422,11 +416,6 @@ for(i in 1:nrow(test_knn))
 #Calculating the sale price from prediction and train data, as we performed log transformation of the dependent variable earlier
 tr_err = 2^tr_tst$SalePrice
 pred_sp = 2^pred_sp
-
-#Calculating the R-squared for the model
-SSt = sum((tr_err - mean(tr_err))^2)
-SSr = sum((pred_sp - mean(tr_err))^2)
-SSr/SSt
 
 #Creating a data frame with prediction and the unique ID for each record
 pred_val = as.data.frame(cbind(test_mod$Id,pred_sp))
@@ -472,7 +461,7 @@ pred_sp = NA
 for(i in 1:nrow(test_knn))
 {
   tot_dis = NA
-  dis = sweep(as.matrix(tr_knn),2,as.matrix(test_knn[i,]),"-")
+  dis = sweep(as.matrix(tr_knn),2,as.matrix(test_knn[i,]),"-") # using sweep simplifies distance calculation
   dis = dis^2
   tot_dis = apply(dis,1,sum)
   tot_dis = sqrt(tot_dis)
@@ -485,13 +474,11 @@ for(i in 1:nrow(test_knn))
 tr_err = 2^tr_tst$SalePrice
 pred_sp = 2^pred_sp
 
-#Calculating the R-squared for the model
-SSt = sum((tr_err - mean(tr_err))^2)
-SSr = sum((pred_sp - mean(tr_err))^2)
-SSr/SSt
-
 #Creating a data frame with prediction and the unique ID for each record
 pred_val = as.data.frame(cbind(test_mod$Id,pred_sp))
 
 #Exporting the predictions as csv
 write.table(pred_val, file = "C1-2-house-prices-knn-quan.csv", row.names=F, col.names=c("Id","SalePrice"), sep=",")
+# This was our most accurate KNN approach. Adding quantitative variables decreased the accuracy of our models, which is why
+# quantitative variables are absent from our final model. We also found that setting k = 3 gave us the most accurate results.
+# The kaggle accuracy of this non-parametric model is 0.17695.
