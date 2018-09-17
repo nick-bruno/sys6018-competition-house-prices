@@ -96,6 +96,14 @@ tr$SaleCondition = as.factor(tr$SaleCondition)
 tr$SaleType = as.factor(tr$SaleType)
 tr$Street = as.factor(tr$Street)
 tr$Utilities = as.factor(tr$Utilities)
+                             
+# Possible categorical variables for analysis 
+tr['has_pool'] <- ifelse(tr$PoolArea==0,0,1) # each value equal to one means there is a pool at that house
+tr['has_alley_access'] <- ifelse(tr$Alley=='NA',0,1)
+tr['has_basement'] <- ifelse(tr$BsmtQual=='<NA>',0,1)
+tr['has_fireplace'] <- ifelse(tr$FireplaceQu=='NA',0,1)
+tr['has_garage'] <- ifelse(tr$GarageQual=='NA',0,1) 
+# After exploring these dummy variables, we found that none of them were statistically significant in our regression models.
 
 #Keeping relevant columns in dataframe
 tr_mod = as.data.frame(tr[,!names(tr) %in% na_cnt1$Name])
