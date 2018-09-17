@@ -312,7 +312,7 @@ tr_knn = cbind(tr_knn,tr_knnc)
 test_knn = cbind(test_knn,test_knnc)
 
 #Creating a function to standardize all the variables on scale of maximum and minimum values for the column
-strd <- function(x) 
+strd <- function(x) # creates a function to reduce code complexity and redundancy
   {
   return ((x - min(x)) / (max(x) - min(x))) 
   }
@@ -379,12 +379,6 @@ test_knnc = as.data.frame(model.matrix(Id ~ . -1, test_knn_c))
 tr_knn = cbind(tr_knn,tr_knnc)
 test_knn = cbind(test_knn,test_knnc)
 
-#Creating a function to standardize all the variables on scale of maximum and minimum values for the column
-strd <- function(x) # creates a function to reduce code complexity and redundancy
-{
-  return ((x - min(x)) / (max(x) - min(x))) 
-}
-
 #Calling the function to standardize all variables
 tr_knn = as.data.frame(apply(tr_knn,2,strd))
 test_knn = as.data.frame(apply(test_knn,2,strd))
@@ -435,12 +429,6 @@ test_knn = tr_tst[,names(tr_tst) %in% rel_fact1]
 
 #Creating a subset of data for modelling, with ID and Sale Prices 
 tr_knn_n = tr_tr[,names(tr_tr) %in% c("Id","SalePrice")] 
-
-#Creating a function to standardize all the variables on scale of maximum and minimum values for the column
-strd <- function(x) 
-{
-  return ((x - min(x)) / (max(x) - min(x))) 
-}
 
 #Calling the function to standardize all variables
 tr_knn = as.data.frame(apply(tr_knn,2,strd))
