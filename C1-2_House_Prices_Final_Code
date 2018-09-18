@@ -25,9 +25,9 @@ na_cnt1 = na_cnt1[na_cnt1$Value!=0,]
 
 #Creating a function to find mode of a variable
 Mode <- function(x) {
-       ux <- unique(x)
-       ux[which.max(tabulate(match(x, ux)))]
-  }
+  ux <- unique(x)
+  ux[which.max(tabulate(match(x, ux)))]
+}
 
 #Substituting values for both the numerical, and character variables
 tr$Electrical[is.na(tr$Electrical)]= Mode(tr$Electrical)
@@ -95,14 +95,16 @@ tr$SaleCondition = as.factor(tr$SaleCondition)
 tr$SaleType = as.factor(tr$SaleType)
 tr$Street = as.factor(tr$Street)
 tr$Utilities = as.factor(tr$Utilities)
-                             
+
 # Possible categorical variables for analysis 
+"
 tr['has_pool'] <- ifelse(tr$PoolArea==0,0,1) # each value equal to one means there is a pool at that house
 tr['has_alley_access'] <- ifelse(tr$Alley=='NA',0,1)
 tr['has_basement'] <- ifelse(tr$BsmtQual=='<NA>',0,1)
 tr['has_fireplace'] <- ifelse(tr$FireplaceQu=='NA',0,1)
 tr['has_garage'] <- ifelse(tr$GarageQual=='NA',0,1) 
 # After exploring these variables, we found that none of them were statistically significant in our regression models.
+"
 
 ## Linear Modeling ##
 #Keeping relevant columns in dataframe
@@ -127,13 +129,13 @@ mse = mean((tr_tst$SalePrice-reg_pr)^2)
 
 #Performing linear regression using limited variables
 reg_ad1 = lm(SalePrice ~ MSZoning + LotArea + Street + LandContour + 
-              LotConfig + LandSlope + Neighborhood + Condition1  + 
-              BldgType + HouseStyle + OverallQual + OverallCond + YearBuilt + 
-              YearRemodAdd + RoofStyle  + MasVnrType + 
-              MasVnrArea + ExterQual + BsmtQual + BsmtExposure + BsmtFinType1 + 
-              BsmtFinSF1 + BsmtFinSF2 + BsmtUnfSF + `1stFlrSF` + `2ndFlrSF` + 
-              FullBath, 
-   data = tr_tr)
+               LotConfig + LandSlope + Neighborhood  + 
+               BldgType + HouseStyle + OverallQual + OverallCond + YearBuilt + 
+               YearRemodAdd + RoofStyle  + MasVnrType + 
+               MasVnrArea + ExterQual + BsmtQual + BsmtExposure + BsmtFinType1 + 
+               BsmtFinSF1 + BsmtFinSF2 + BsmtUnfSF + `1stFlrSF` + `2ndFlrSF` + 
+               FullBath, 
+             data = tr_tr)
 summary(reg_ad1)
 
 #Checking the accuracy of the dataset on test data
@@ -142,7 +144,7 @@ mse1 = mean((tr_tst$SalePrice-reg_pr1)^2)
 
 #Performing linear regression using limited variables, and multiple other iterations, which are not depicted here
 reg_ad = lm(SalePrice ~ MSZoning + LotArea + Street + LandContour + 
-              LotConfig + LandSlope + Neighborhood + Condition1  + 
+              LotConfig + LandSlope + Neighborhood  + 
               BldgType + HouseStyle + OverallQual + OverallCond + YearBuilt + 
               YearRemodAdd + RoofStyle  + MasVnrType + 
               MasVnrArea + ExterQual + BsmtQual + BsmtExposure + BsmtFinType1 + 
@@ -151,7 +153,7 @@ reg_ad = lm(SalePrice ~ MSZoning + LotArea + Street + LandContour +
               Functional + Fireplaces + GarageFinish + GarageCars + GarageArea + 
               GarageQual + GarageCond + WoodDeckSF + ScreenPorch + PoolArea + 
               SaleCondition, 
-   data = tr_tr)
+            data = tr_tr)
 summary(reg_ad)
 
 #Checking the accuracy of the dataset on test data
@@ -270,7 +272,7 @@ write.table(prediction, file = "C1-2-house-prices.csv", row.names=F, col.names=c
 # This linear regression was chosen because we found it had the lowest MSE and highest r-squared compared to
 # to the other regressions run earlier. This conclusion is verified with our cross-validation process as well
 # as the accuracy of the kaggle competition submissions. The accuracy of this model was 0.13494.
-                                  
+
 ###-----------------------------------------------------------------------------------###
 
 #KNN Implementation
@@ -328,9 +330,9 @@ test_knn = cbind(test_knn,test_knnc)
 
 #Creating a function to standardize all the variables on scale of maximum and minimum values for the column
 strd <- function(x) # creates a function to reduce code complexity and redundancy
-  {
+{
   return ((x - min(x)) / (max(x) - min(x))) 
-  }
+}
 
 #Calling the function to standardize all variables
 tr_knn = as.data.frame(apply(tr_knn,2,strd))
@@ -349,7 +351,7 @@ pred_sp = NA
 
 #Iterating through all records and performing KNN clustering
 for(i in 1:nrow(test_knn))
-  {
+{
   tot_dis = NA
   dis = sweep(as.matrix(tr_knn),2,as.matrix(test_knn[i,]),"-")
   dis = dis^2
@@ -482,16 +484,17 @@ pred_val = as.data.frame(cbind(test_mod$Id,pred_sp))
 
 #Exporting the predictions as csv
 write.table(pred_val, file = "C1-2-house-prices-knn-quan.csv", row.names=F, col.names=c("Id","SalePrice"), sep=",")
-# This was our most accurate KNN approach. Adding quantitative variables decreased the accuracy of our models, which is why
-# quantitative variables are absent from our final model. We also found that setting k = 3 gave us the most accurate results.
+# This was our most accurate KNN approach. Adding quantitative variables decreased the accuracy of our models, which is why 
+# quantitative variables are absent from our final model. 
+#Iterating through different values of k, we also found that setting k = 3 gave us the most accurate results, hence thats the value of k in our final model.
 # The kaggle accuracy of this non-parametric model is 0.17695.
-                                  
-                                 
+
+
 ### Another approach to KNN ###
 ##### KNN Statistical Modeling Method #####
 train <- read.csv('train.csv')
 test <- read.csv('test.csv')                                 
-                                  
+
 # Group of variables I want to investigate #
 quality <- train['OverallQual']
 lot_area <- train['LotArea']
@@ -544,7 +547,7 @@ valid_set$pred_sale_price <- valid_pred_sales_prices # adds the predicted prices
 
 # Calculating the MSE #
 mse <- (sum(valid_set$SalePrice - valid_set$pred_sale_price)^2 / m)
-  # 320443520
+# 320443520
 
 
 # Now I will test the same cross-validation using a normalized approach called min-max normalizing #
@@ -609,10 +612,10 @@ valid_set$normalized_pred_sale_price <- normalized_pred_sales_prices
 
 # Calculating the MSE #
 mse_normalized <- (sum(valid_set$SalePrice - valid_set$normalized_pred_sale_price)^2 / m)
-  # 452254619
+# 452254619
 
 difference_in_mse <- mse_normalized - mse 
-  # 131811099
+# 131811099
 
 # Because the MSE in the first model was smaller, the regular KNN method seemed to predict price more
 # accurately compared to the min-max normalization approach.
