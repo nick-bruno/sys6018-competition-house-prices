@@ -2,7 +2,7 @@
 #Assignment: Assignment 3, Home Prices
 #Team Name: C1-2
 
-#Provides "read_csv" function
+#Provides relevant functions
 library(readr)
 library(dplyr)
 
@@ -162,7 +162,16 @@ reg_pr = predict(reg_ad, newdata = tr_tst)
 mse = mean((tr_tst$SalePrice-reg_pr)^2)
 
 #Running finalized linear regression model on entire dataset
-reg_all = lm(SalePrice ~ `1stFlrSF`+   `2ndFlrSF`+   BedroomAbvGr+   BsmtFinSF1+   BsmtFinSF2+   BsmtUnfSF+   Fireplaces+   GarageArea+   KitchenAbvGr+   LotArea+   MasVnrArea+   OverallCond+   OverallQual+   ScreenPorch+   YearBuilt+  WoodDeckSF + Functional+   MSZoning+   Condition1+  Condition2+  Exterior1st+   Neighborhood+   CentralAir+  Heating+  KitchenQual+  LandSlope+  RoofMatl+  SaleCondition, data = tr_mod)
+reg_all = lm(SalePrice ~ MSZoning + LotArea + Street + LandContour + 
+               LotConfig + LandSlope + Neighborhood + Condition1 + Condition2 + 
+               BldgType + HouseStyle + OverallQual + OverallCond + YearBuilt + 
+               YearRemodAdd + RoofStyle + RoofMatl + Exterior1st + MasVnrType + 
+               MasVnrArea + ExterQual + BsmtQual + BsmtExposure + BsmtFinType1 + 
+               BsmtFinSF1 + BsmtFinSF2 + BsmtUnfSF + firstFlrSF + secFlrSF + 
+               FullBath + BedroomAbvGr + KitchenAbvGr + KitchenQual + TotRmsAbvGrd + 
+               Functional + Fireplaces + GarageFinish + GarageCars + GarageArea + 
+               GarageQual + GarageCond + WoodDeckSF + ScreenPorch + PoolArea + 
+               SaleCondition, data = tr_mod)
 summary(reg_all)
 
 #Reading test data
